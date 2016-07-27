@@ -74,10 +74,20 @@ namespace Enigma2TV
 
                         if (_currentBougetService != null)
                         {
-                            var curInfo = await _enigma.GetCurrentserviceinformation();
-                            _currentService = curInfo?.e2service;
+                            var powerState = await _enigma.GetPowerState();
+                            if (powerState.e2instandby)
+                            {
+                                await _enigma.ToggleStandby();
+                                await Task.Run(() => { System.Threading.Thread.Sleep(1000); });
+                            }
 
-                            playM3UFile(_enigma.GetM3UContent(_currentService.e2servicereference));
+                            var curInfo = await _enigma.GetCurrentserviceinformation();
+                            if (!string.IsNullOrEmpty(curInfo?.e2service?.e2servicereference))
+                            {
+                                _currentService = curInfo.e2service;
+
+                                playM3UFile(_enigma.GetM3UContent(_currentService.e2servicereference));
+                            }
                         }
                     }
                 }
@@ -140,7 +150,7 @@ namespace Enigma2TV
         private int GetServiceIndexWithinBouquet(e2service service)
         {
             int result = -1;
-            if (_currentBougetService != null)
+            if (_currentBougetService != null && service!=null)
             {
                 for (int i = 0; i < _currentBougetService.e2services.Count; i++)
                 {
@@ -166,6 +176,19 @@ namespace Enigma2TV
                     await ChannelDown();
                     e.Handled = true;
                     break;
+                case Key.S:
+                    Close();
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var powerState = await _enigma.GetPowerState();
+            if (powerState!=null && !powerState.e2instandby)
+            {
+                await _enigma.ToggleStandby();
             }
         }
     }

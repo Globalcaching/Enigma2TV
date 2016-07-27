@@ -79,6 +79,46 @@ namespace Enigma2TV.Enigma
             return result;
         }
 
+        public async Task<e2powerstate> GetPowerState()
+        {
+            e2powerstate result = null;
+            await Task.Run(() =>
+            {
+                var s = GetWebIfResult("powerstate");
+                if (s != null)
+                {
+                    var serializer = new XmlSerializer(typeof(e2powerstate));
+                    using (var stream = new StringReader(s))
+                    using (var reader = XmlReader.Create(stream))
+                    {
+                        result = (e2powerstate)serializer.Deserialize(reader);
+                    }
+                }
+            });
+            return result;
+        }
+
+        public async Task<e2powerstate> ToggleStandby()
+        {
+            e2powerstate result = null;
+            await Task.Run(() =>
+            {
+                var parameters = new Dictionary<string, string>();
+                parameters.Add("newstate", "0");
+                var s = GetWebIfResult("powerstate", parameters);
+                if (s != null)
+                {
+                    var serializer = new XmlSerializer(typeof(e2powerstate));
+                    using (var stream = new StringReader(s))
+                    using (var reader = XmlReader.Create(stream))
+                    {
+                        result = (e2powerstate)serializer.Deserialize(reader);
+                    }
+                }
+            });
+            return result;
+        }
+
         public async Task<e2servicelist> GetServices()
         {
             return await GetServices("");
