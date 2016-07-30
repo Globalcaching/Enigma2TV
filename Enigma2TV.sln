@@ -5,16 +5,28 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enigma2TV", "Enigma2TV\Enigma2TV.csproj", "{7EDB7811-8F7D-4787-9E3A-BADAEC1E8E5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stream2TV", "Stream2TV\Stream2TV.csproj", "{661D4DDE-3B34-4E32-B9B3-B7F7ACEA6D2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7EDB7811-8F7D-4787-9E3A-BADAEC1E8E5E}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{7EDB7811-8F7D-4787-9E3A-BADAEC1E8E5E}.Debug|x86.ActiveCfg = Debug|x86
 		{7EDB7811-8F7D-4787-9E3A-BADAEC1E8E5E}.Debug|x86.Build.0 = Debug|x86
+		{7EDB7811-8F7D-4787-9E3A-BADAEC1E8E5E}.Release|Any CPU.ActiveCfg = Release|x86
 		{7EDB7811-8F7D-4787-9E3A-BADAEC1E8E5E}.Release|x86.ActiveCfg = Release|x86
 		{7EDB7811-8F7D-4787-9E3A-BADAEC1E8E5E}.Release|x86.Build.0 = Release|x86
+		{661D4DDE-3B34-4E32-B9B3-B7F7ACEA6D2F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{661D4DDE-3B34-4E32-B9B3-B7F7ACEA6D2F}.Debug|x86.ActiveCfg = Debug|x86
+		{661D4DDE-3B34-4E32-B9B3-B7F7ACEA6D2F}.Debug|x86.Build.0 = Debug|x86
+		{661D4DDE-3B34-4E32-B9B3-B7F7ACEA6D2F}.Release|Any CPU.ActiveCfg = Release|x86
+		{661D4DDE-3B34-4E32-B9B3-B7F7ACEA6D2F}.Release|x86.ActiveCfg = Release|x86
+		{661D4DDE-3B34-4E32-B9B3-B7F7ACEA6D2F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

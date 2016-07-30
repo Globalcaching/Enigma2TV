@@ -6,16 +6,101 @@
         xmlns:local="clr-namespace:Enigma2TV"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
-        Closing="Window_Closing"
-        PreviewKeyDown="Window_PreviewKeyDown"
         WindowStyle="None"
+        AllowsTransparency="True"
+        Background="#00000000"
+        PreviewKeyDown="Window_PreviewKeyDown"
         Title="Enigma2 TV" Height="540" Width="960">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="1" x:Name="grid1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" 
+              Grid.Column="0" 
+              x:Name="gridTV"
+              >
+            
+        </Grid>
+        <Grid Grid.Row="0" 
+              Grid.Column="0" 
+              x:Name="gridChannelInfoView"              
+              >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel></StackPanel>
+            <Grid Grid.Row="1" 
+                  x:Name="gridChannelInfo" 
+                  Height="150"
+                  Margin="10,0,10,0"
+                  Visibility="{Binding ChannelInfoVisibility}"
+                >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="100" />
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Grid.RowSpan="2" Background="Black" Opacity=".2" />
+                <TextBlock 
+                    Grid.Column="0" 
+                    Grid.ColumnSpan="2"
+                    Grid.Row="0"
+                    Text="{Binding CurrentTime, StringFormat={}{0:dddd d MMMM yyyy}}"
+                    FontSize="16"
+                    Foreground="Yellow"
+                    FontWeight="Bold"
+                    />
+                <TextBlock 
+                    Grid.Column="0" 
+                    Grid.Row="1"
+                    Text="{Binding CurrentTime, StringFormat={}{0:HH:mm}}"
+                    FontSize="26"
+                    Foreground="Yellow"
+                    FontWeight="Bold"
+                    />
+                <Grid
+                    Grid.Column="1"
+                    Grid.Row="1"
+                    >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="80" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock 
+                        Grid.Column="0" 
+                        Grid.Row="0"
+                        Text="{Binding ChannelIndex}"
+                        FontSize="26"
+                        Foreground="White"
+                        FontWeight="Bold"
+                    />
+                    <TextBlock 
+                        Grid.Column="1" 
+                        Grid.Row="0"
+                        Text="{Binding CurrentChannelName}"
+                        FontSize="26"
+                        Foreground="White"
+                        FontWeight="Bold"
+                    />
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

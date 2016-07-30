@@ -6,20 +6,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Enigma2TV
+namespace Stream2TV
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
-        Settings _settings = null;
-
         protected override void OnStartup(StartupEventArgs e)
         {
-            WpfSingleInstance.Make("Enigma2TV", this);
-            _settings = Settings.Default;
-
+            WpfSingleInstance.Make("Stream2TV", this);
             base.OnStartup(e);
         }
     }

@@ -4,7 +4,7 @@ using System.Windows;
 using System.IO;
 using System.IO.IsolatedStorage;
 
-namespace Enigma2TV
+namespace Stream2TV
 {
     public static class WpfSingleInstance
     {
@@ -66,7 +66,7 @@ namespace Enigma2TV
             //app.Dispatcher.BeginInvoke(
             //        new dispatcherInvoker(delegate()
             //        {
-            //            Application.Current.MainWindow.Activate();
+            //            //Application.Current.MainWindow.Activate();
 
             //            // !!! delete it if not use
             //            processArgs();
@@ -85,7 +85,7 @@ namespace Enigma2TV
 
         internal static readonly object StartArgKey = "StartArg";
 
-        private static readonly String isolatedStorageFileName = "SomeFileInTheRoot.txt";
+        private static readonly String isolatedStorageFileName = "SomeFileInTheRoot2.txt";
 
         private static void setArgs()
         {
