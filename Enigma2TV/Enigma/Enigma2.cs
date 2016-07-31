@@ -16,10 +16,23 @@ namespace Enigma2TV.Enigma
         public string IPAddress { get; private set; }
         public string StreamingPort { get; private set; }
 
+        private static DateTime _baseDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
         public Enigma2(string ipAddress, string streamingPort)
         {
             IPAddress = ipAddress;
             StreamingPort = streamingPort;
+        }
+
+        public DateTime? ConvertDateTime(string enigma2Time)
+        {
+            DateTime? result = null;
+            long dt;
+            if (!string.IsNullOrEmpty(enigma2Time) && long.TryParse(enigma2Time, out dt))
+            {
+                result = _baseDateTime.AddSeconds(dt).ToLocalTime();
+            }
+            return result;
         }
 
         public async Task<e2settingslist> GetSettings()

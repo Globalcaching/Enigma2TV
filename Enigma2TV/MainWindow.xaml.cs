@@ -237,16 +237,25 @@ namespace Enigma2TV
         {
             HideChannelInfo();
             ChannelIndex = index+1;
-            CurrentChannelName = _currentService.e2servicename;
             await StartStream2TV("stop");
 
             await _enigma.Zap(_currentBougetService.e2services[index]);
             //await Task.Run(() => { System.Threading.Thread.Sleep(1000); });
-            var curInfo = await _enigma.GetCurrentserviceinformation();
-            _currentService = curInfo.e2service;
+            await UpdateCurrentChannelInformation();
 
             await playM3UFile(_enigma.GetM3UContent(_currentService.e2servicereference));
-            ShowChannelInfo();
+            await ShowChannelInfo(false);
+        }
+
+        private async Task UpdateCurrentChannelInformation()
+        {
+            var curInfo = await _enigma.GetCurrentserviceinformation();
+            if (curInfo != null)
+            {
+                _currentService = curInfo.e2service;
+                CurrentChannelName = _currentService.e2servicename;
+                CurrentTime = _enigma.ConvertDateTime(curInfo.e2events[0].e2eventcurrenttime) ?? DateTime.Now;
+            }
         }
 
         private int GetServiceIndexWithinBouquet(e2service service)
@@ -283,7 +292,7 @@ namespace Enigma2TV
                     e.Handled = true;
                     break;
                 case Key.Enter:
-                    ShowChannelInfo();
+                    await ShowChannelInfo();
                     e.Handled = true;
                     break;
             }
@@ -303,11 +312,14 @@ namespace Enigma2TV
             }
         }
 
-        private void ShowChannelInfo()
+        private async Task ShowChannelInfo(bool getCurrentChannelInfo = true)
         {
             if (_activeViewMode == ViewMode.ChannelInfo || _activeViewMode == ViewMode.TV)
             {
-                CurrentTime = DateTime.Now;
+                if (getCurrentChannelInfo)
+                {
+                    await UpdateCurrentChannelInformation();
+                }
                 ChannelInfoVisibility = Visibility.Visible;
                 _activeViewMode = ViewMode.ChannelInfo;
                 _channelInfoTimeout.Start();
