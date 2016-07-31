@@ -73,6 +73,55 @@ namespace Enigma2TV
             set { SetProperty(ref _currentChannelName, value); }
         }
 
+        private DateTime _currentStartTime = DateTime.Now;
+        public DateTime CurrentStartTime
+        {
+            get { return _currentStartTime; }
+            set { SetProperty(ref _currentStartTime, value); }
+        }
+
+        private string _currentProgramName = "";
+        public string CurrentProgramName
+        {
+            get { return _currentProgramName; }
+            set { SetProperty(ref _currentProgramName, value); }
+        }
+
+        private int _currentProgress = 0;
+        public int CurrentProgress
+        {
+            get { return _currentProgress; }
+            set { SetProperty(ref _currentProgress, value); }
+        }
+
+        private TimeSpan _currentRemainingTime;
+        public TimeSpan CurrentRemainingTime
+        {
+            get { return _currentRemainingTime; }
+            set { SetProperty(ref _currentRemainingTime, value); }
+        }
+
+        private DateTime _nextStartTime = DateTime.Now;
+        public DateTime NextStartTime
+        {
+            get { return _nextStartTime; }
+            set { SetProperty(ref _nextStartTime, value); }
+        }
+
+        private string _nextProgramName = "";
+        public string NextProgramName
+        {
+            get { return _nextProgramName; }
+            set { SetProperty(ref _nextProgramName, value); }
+        }
+
+        private TimeSpan _nextDurationTime;
+        public TimeSpan NextDurationTime
+        {
+            get { return _nextDurationTime; }
+            set { SetProperty(ref _nextDurationTime, value); }
+        }
+
         public MainWindow()
         {
             _instance = this;
@@ -255,6 +304,14 @@ namespace Enigma2TV
                 _currentService = curInfo.e2service;
                 CurrentChannelName = _currentService.e2servicename;
                 CurrentTime = _enigma.ConvertDateTime(curInfo.e2events[0].e2eventcurrenttime) ?? DateTime.Now;
+                CurrentStartTime = _enigma.ConvertDateTime(curInfo.e2events[0].e2eventstart) ?? DateTime.Now;
+                CurrentProgramName = curInfo.e2events[0].e2eventtitle;
+                CurrentRemainingTime = _enigma.ConvertTTimeSpan(curInfo.e2events[0].e2eventremaining) ?? TimeSpan.FromSeconds(0);
+                NextStartTime = _enigma.ConvertDateTime(curInfo.e2events[1].e2eventstart) ?? DateTime.Now;
+                NextProgramName = curInfo.e2events[1].e2eventtitle;
+                NextDurationTime = _enigma.ConvertTTimeSpan(curInfo.e2events[1].e2eventduration) ?? TimeSpan.FromSeconds(0);
+                var CurrentDurationTime = _enigma.ConvertTTimeSpan(curInfo.e2events[0].e2eventduration) ?? TimeSpan.FromSeconds(0);
+                CurrentProgress = 100-(int)Math.Min((100.0*CurrentRemainingTime.TotalSeconds / CurrentDurationTime.TotalSeconds), 100.0);
             }
         }
 

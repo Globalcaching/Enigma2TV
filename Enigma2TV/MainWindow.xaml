@@ -50,7 +50,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="100" />
                 </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Grid.RowSpan="2" Background="Black" Opacity=".2" />
+                <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Grid.RowSpan="2" Background="Black" Opacity=".6" />
                 <TextBlock 
                     Grid.Column="0" 
                     Grid.ColumnSpan="2"
@@ -81,7 +81,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="100" />
                     </Grid.ColumnDefinitions>
                     <TextBlock 
                         Grid.Column="0" 
@@ -98,6 +98,66 @@
                         FontSize="26"
                         Foreground="White"
                         FontWeight="Bold"
+                    />
+                    <ProgressBar 
+                        Grid.Column="0" 
+                        Grid.ColumnSpan="3" 
+                        Grid.Row="1"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="{Binding CurrentProgress}"
+                        Foreground="#FFF3C90B"
+                        Height="10"
+                    />
+                    <TextBlock 
+                        Grid.Column="0" 
+                        Grid.Row="2"
+                        Text="{Binding CurrentStartTime, StringFormat={}{0:HH:mm}}"
+                        FontSize="20"
+                        Foreground="White"
+                        FontWeight="Bold"
+                    />
+                    <TextBlock 
+                        Grid.Column="1" 
+                        Grid.Row="2"
+                        Text="{Binding CurrentProgramName}"
+                        FontSize="20"
+                        Foreground="White"
+                        FontWeight="Bold"
+                    />
+                    <TextBlock 
+                        Grid.Column="3" 
+                        Grid.Row="2"
+                        Text="{Binding CurrentRemainingTime.TotalMinutes, StringFormat={}+{0:#} min}"
+                        FontSize="20"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Right"
+                    />
+                    <TextBlock 
+                        Grid.Column="0" 
+                        Grid.Row="3"
+                        Text="{Binding NextStartTime, StringFormat={}{0:HH:mm}}"
+                        FontSize="20"
+                        Foreground="White"
+                        FontWeight="Bold"
+                    />
+                    <TextBlock 
+                        Grid.Column="1" 
+                        Grid.Row="3"
+                        Text="{Binding NextProgramName}"
+                        FontSize="20"
+                        Foreground="White"
+                        FontWeight="Bold"
+                    />
+                    <TextBlock 
+                        Grid.Column="3" 
+                        Grid.Row="3"
+                        Text="{Binding NextDurationTime.TotalMinutes}"
+                        FontSize="20"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Right"
                     />
                 </Grid>
             </Grid>

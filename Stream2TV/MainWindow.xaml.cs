@@ -49,10 +49,10 @@ namespace Stream2TV
         {
             if (System.Diagnostics.Process.GetProcessById(_parentProcessId)==null)
             {
-                Dispatcher.BeginInvoke((Action)(() => 
-                { 
+                //Dispatcher.BeginInvoke((Action)(() => 
+                //{ 
                     CloseApp();
-                }));
+                //}));
             }
         }
 

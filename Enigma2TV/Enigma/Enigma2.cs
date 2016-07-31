@@ -35,6 +35,17 @@ namespace Enigma2TV.Enigma
             return result;
         }
 
+        public TimeSpan? ConvertTTimeSpan(string enigma2Duration)
+        {
+            TimeSpan? result = null;
+            double dt;
+            if (!string.IsNullOrEmpty(enigma2Duration) && double.TryParse(enigma2Duration, out dt))
+            {
+                result = TimeSpan.FromSeconds(dt);
+            }
+            return result;
+        }
+
         public async Task<e2settingslist> GetSettings()
         {
             e2settingslist result = null;
