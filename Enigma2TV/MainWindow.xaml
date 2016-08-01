@@ -13,6 +13,7 @@
         Title="Enigma2 TV" Height="540" Width="960">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -20,13 +21,44 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Row="0" 
+        <Grid Grid.Row="1" 
               Grid.Column="0" 
               x:Name="gridTV"
               >
             
         </Grid>
-        <Grid Grid.Row="0" 
+        <Grid Grid.Row="0"
+              Grid.Column="1"
+              Grid.ColumnSpan="2"
+              x:Name="epgListHeader"
+              Background="Black" Opacity=".6"
+              Visibility="{Binding EPGListVisibility}"
+              >
+
+        </Grid>
+        <Grid Grid.Row="1"
+              Grid.RowSpan="2"
+              Grid.Column="1"
+              x:Name="epgList"
+              Background="Black" Opacity=".6"
+              Visibility="{Binding EPGListVisibility}"
+              >
+            <DataGrid
+                AutoGenerateColumns="False"
+                x:Name="epgListEntries">
+                
+            </DataGrid>
+        </Grid>
+        <Grid Grid.Row="2"
+              Grid.Column="0"
+              x:Name="epgListInfo"
+              Background="Black" Opacity=".6"
+              Visibility="{Binding EPGListVisibility}"
+              >
+
+        </Grid>
+        <Grid Grid.Row="0"
+              Grid.RowSpan="3"
               Grid.Column="0" 
               x:Name="gridChannelInfoView"              
               >

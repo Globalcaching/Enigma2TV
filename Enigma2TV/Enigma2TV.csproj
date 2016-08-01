@@ -68,6 +68,7 @@
     <Compile Include="Enigma\Enigma2.cs" />
     <Compile Include="Models\e2currentserviceinformation.cs" />
     <Compile Include="Models\e2event.cs" />
+    <Compile Include="Models\e2eventlist.cs" />
     <Compile Include="Models\e2powerstate.cs" />
     <Compile Include="Models\e2service.cs" />
     <Compile Include="Models\e2servicelist.cs" />

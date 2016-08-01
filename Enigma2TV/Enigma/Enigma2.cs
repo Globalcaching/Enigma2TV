@@ -46,6 +46,27 @@ namespace Enigma2TV.Enigma
             return result;
         }
 
+        public async Task<e2eventlist> GetEPGNow(string bRef)
+        {
+            e2eventlist result = null;
+            await Task.Run(() =>
+            {
+                var parameters = new Dictionary<string, string>();
+                parameters.Add("bRef", bRef);
+                var s = GetWebIfResult("epgnow", parameters);
+                if (s != null)
+                {
+                    var serializer = new XmlSerializer(typeof(e2eventlist));
+                    using (var stream = new StringReader(s))
+                    using (var reader = XmlReader.Create(stream))
+                    {
+                        result = (e2eventlist)serializer.Deserialize(reader);
+                    }
+                }
+            });
+            return result;
+        }
+
         public async Task<e2settingslist> GetSettings()
         {
             e2settingslist result = null;

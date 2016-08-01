@@ -31,9 +31,18 @@ namespace Enigma2TV
             EPG
         }
 
+        public class EPGListEntry
+        {
+            public int ChannelIndex { get; set; }
+            public string ChannelName { get; set; }
+            public string ProgramName { get; set; }
+            public int Progress { get; set; }
+        }
+
         private static MainWindow _instance;
         private string _settingsFolder;
         private Enigma.Enigma2 _enigma;
+        private string _currentBouquetSRef;
         private e2servicelist _bougetsServices;
         private e2servicelist _currentBougetService;
         private e2service _currentService;
@@ -50,6 +59,13 @@ namespace Enigma2TV
         {
             get { return _channelInfoVisibility; }
             set { SetProperty(ref _channelInfoVisibility, value); }
+        }
+
+        private Visibility _epgListVisibility = Visibility.Collapsed;
+        public Visibility EPGListVisibility
+        {
+            get { return _epgListVisibility; }
+            set { SetProperty(ref _epgListVisibility, value); }
         }
 
         private DateTime _currentTime = DateTime.Now;
@@ -219,10 +235,10 @@ namespace Enigma2TV
                 if (lastSelectedTVService != null)
                 {
                     var parts = lastSelectedTVService.Split(';');
-                    var s = (from a in _allBougets.Keys where a == parts[1] select a).FirstOrDefault();
-                    if (s != null)
+                    _currentBouquetSRef = (from a in _allBougets.Keys where a == parts[1] select a).FirstOrDefault();
+                    if (_currentBouquetSRef != null)
                     {
-                        _currentBougetService = _allBougets[s];
+                        _currentBougetService = _allBougets[_currentBouquetSRef];
 
                         if (_currentBougetService != null)
                         {
@@ -352,6 +368,10 @@ namespace Enigma2TV
                     await ShowChannelInfo();
                     e.Handled = true;
                     break;
+                case Key.E:
+                    await ShowEPGList();
+                    e.Handled = true;
+                    break;
             }
         }
 
@@ -365,6 +385,20 @@ namespace Enigma2TV
                     break;
                 default:
                     TV_PreviewKeyDown(sender, e);
+                    break;
+            }
+        }
+
+        private void EPGListInfo_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Escape:
+                case Key.X:
+                    HideEPGList();
+                    e.Handled = true;
+                    break;
+                default:
                     break;
             }
         }
@@ -393,6 +427,26 @@ namespace Enigma2TV
             }
         }
 
+        private async Task ShowEPGList()
+        {
+            HideChannelInfo();
+            _activeViewMode = ViewMode.EPG;
+            epgList.Width = 2 * this.ActualWidth / 3;
+            epgListInfo.Height = 2 * this.ActualHeight / 3;
+            EPGListVisibility = Visibility.Visible;
+            var epgNow = await _enigma.GetEPGNow(_currentBouquetSRef);
+            if (epgNow != null)
+            {
+                //EPGListEntry
+            }
+        }
+
+        private void HideEPGList()
+        {
+            _activeViewMode = ViewMode.TV;
+            EPGListVisibility = Visibility.Collapsed;
+        }
+
         private async Task CloseApplication()
         {
             await StartStream2TV("close");
@@ -416,6 +470,7 @@ namespace Enigma2TV
                     TV_PreviewKeyDown(sender, e);
                     break;
                 case ViewMode.EPG:
+                    EPGListInfo_PreviewKeyDown(sender, e);
                     break;
                 default:
                     TV_PreviewKeyDown(sender, e);
