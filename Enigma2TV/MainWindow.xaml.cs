@@ -1,6 +1,7 @@
 ﻿using Enigma2TV.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -28,15 +29,7 @@ namespace Enigma2TV
         {
             TV,
             ChannelInfo,
-            EPG
-        }
-
-        public class EPGListEntry
-        {
-            public int ChannelIndex { get; set; }
-            public string ChannelName { get; set; }
-            public string ProgramName { get; set; }
-            public int Progress { get; set; }
+            EPGList
         }
 
         private static MainWindow _instance;
@@ -51,8 +44,86 @@ namespace Enigma2TV
         private e2settingslist _enigmaSettings;
         private volatile bool msgAck;
         private ViewMode _activeViewMode = ViewMode.TV;
+        private DispatcherTimer _epgListRefresh;
+        private TimeSpan _timeDiffPCvsEnigma = TimeSpan.FromSeconds(0);
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private List<EPGListEntry> _epgListEntries;
+        public List<EPGListEntry> EPGListEntries
+        {
+            get { return _epgListEntries; }
+            set { SetProperty(ref _epgListEntries, value); }
+        }
+
+
+        private EPGListEntry _selectedEPGListEntry;
+        public EPGListEntry SelectedEPGListEntry
+        {
+            get { return _selectedEPGListEntry; }
+            set
+            {
+                SetProperty(ref _selectedEPGListEntry, value);
+                if (_selectedEPGListEntry != null)
+                {
+                    var snow = _enigma.GetEPGSerciceNow(_selectedEPGListEntry.sRef);
+                    var snext = _enigma.GetEPGSerciceNext(_selectedEPGListEntry.sRef);
+
+                    SelectedProgramName = snow.e2events[0].e2eventtitle;
+                    SelectedProgramInfo = $"{snow.e2events[0].e2eventdescription}\r\n{snow.e2events[0].e2eventdescriptionextended}";
+                    SelectedStartTime = _enigma.ConvertDateTime(snow.e2events[0].e2eventstart) ?? DateTime.Now;
+                    SelectedEndTime = SelectedStartTime + (_enigma.ConvertTTimeSpan(snow.e2events[0].e2eventduration) ?? TimeSpan.FromSeconds(0));
+                    var selectedDurationTime = _enigma.ConvertTTimeSpan(snow.e2events[0].e2eventduration) ?? TimeSpan.FromSeconds(0);
+                    var selectedCurrentTime = _enigma.ConvertDateTime(snow.e2events[0].e2eventcurrenttime) ?? DateTime.Now;
+                    var selectedRemainingTime = SelectedEndTime - selectedCurrentTime;
+                    SelectedProgress = Math.Max(0, 100 - (int)Math.Min((100.0 * selectedRemainingTime.TotalSeconds / selectedDurationTime.TotalSeconds), 100.0));
+                    SelectedNextProgramName = snext.e2events[0].e2eventtitle;
+                }
+            }
+        }
+
+        private string _selectedProgramName = "";
+        public string SelectedProgramName
+        {
+            get { return _selectedProgramName; }
+            set { SetProperty(ref _selectedProgramName, value); }
+        }
+
+        private string _selectedNextProgramName = "";
+        public string SelectedNextProgramName
+        {
+            get { return _selectedNextProgramName; }
+            set { SetProperty(ref _selectedNextProgramName, value); }
+        }
+
+        private string _selectedProgramInfo = "";
+        public string SelectedProgramInfo
+        {
+            get { return _selectedProgramInfo; }
+            set { SetProperty(ref _selectedProgramInfo, value); }
+        }
+
+        private DateTime _selectedStartTime = DateTime.Now;
+        public DateTime SelectedStartTime
+        {
+            get { return _selectedStartTime; }
+            set { SetProperty(ref _selectedStartTime, value); }
+        }
+
+        private DateTime _selectedEndTime = DateTime.Now;
+        public DateTime SelectedEndTime
+        {
+            get { return _selectedEndTime; }
+            set { SetProperty(ref _selectedEndTime, value); }
+        }
+
+        private int _selectedProgress = 0;
+        public int SelectedProgress
+        {
+            get { return _selectedProgress; }
+            set { SetProperty(ref _selectedProgress, value); }
+        }
+
 
         private Visibility _channelInfoVisibility = Visibility.Hidden;
         public Visibility ChannelInfoVisibility
@@ -140,6 +211,7 @@ namespace Enigma2TV
 
         public MainWindow()
         {
+            EPGListEntries = new List<EPGListEntry>();
             _instance = this;
             InitializeComponent();
 
@@ -222,6 +294,11 @@ namespace Enigma2TV
 
         public async Task InitEnigma()
         {
+            if (_epgListRefresh != null)
+            {
+                _epgListRefresh.Stop();
+                _epgListRefresh = null;
+            }
             _enigma = new Enigma.Enigma2(Settings.Default.IPAddress, Settings.Default.StreamingPort);
             _bougetsServices = await _enigma.GetServices();
             if (_bougetsServices != null)
@@ -253,14 +330,26 @@ namespace Enigma2TV
                             if (!string.IsNullOrEmpty(curInfo?.e2service?.e2servicereference))
                             {
                                 _currentService = curInfo.e2service;
+                                _timeDiffPCvsEnigma = DateTime.Now - (_enigma.ConvertDateTime(curInfo.e2events[0].e2eventcurrenttime) ?? DateTime.Now);
                                 ChannelIndex = GetServiceIndexWithinBouquet(_currentService)+1;
                                 CurrentChannelName = _currentService.e2servicename;
                                 await playM3UFile(_enigma.GetM3UContent(_currentService.e2servicereference));
+                                UpdateEPGList();
+                                _epgListRefresh = new DispatcherTimer();
+                                _epgListRefresh.Interval = TimeSpan.FromSeconds(10);
+                                _epgListRefresh.Tick += _epgListRefresh_Tick;
+                                _epgListRefresh.Start();
                             }
                         }
                     }
                 }
             }
+        }
+
+        private void _epgListRefresh_Tick(object sender, EventArgs e)
+        {
+            CurrentTime = DateTime.Now - _timeDiffPCvsEnigma;
+            UpdateEPGListEntriesProgress(true);
         }
 
         private async Task playM3UFile(string content)
@@ -327,8 +416,84 @@ namespace Enigma2TV
                 NextProgramName = curInfo.e2events[1].e2eventtitle;
                 NextDurationTime = _enigma.ConvertTTimeSpan(curInfo.e2events[1].e2eventduration) ?? TimeSpan.FromSeconds(0);
                 var CurrentDurationTime = _enigma.ConvertTTimeSpan(curInfo.e2events[0].e2eventduration) ?? TimeSpan.FromSeconds(0);
-                CurrentProgress = 100-(int)Math.Min((100.0*CurrentRemainingTime.TotalSeconds / CurrentDurationTime.TotalSeconds), 100.0);
+                CurrentProgress = Math.Max(0, 100-(int)Math.Min((100.0*CurrentRemainingTime.TotalSeconds / CurrentDurationTime.TotalSeconds), 100.0));
             }
+        }
+
+        private void UpdateEPGListEntriesProgress(bool checkForRefresh)
+        {
+            if (EPGListEntries != null)
+            {
+                foreach (var entry in EPGListEntries)
+                {
+                    if (entry.Duration.TotalMinutes > 0)
+                    {
+                        //_timeDiffPCvsEnigma = PC time - Enigma time
+                        TimeSpan remaining = (entry.EndTime + _timeDiffPCvsEnigma) - DateTime.Now;
+                        entry.Progress = Math.Max(0, 100 - (int)Math.Min((100.0 * remaining.TotalSeconds / entry.Duration.TotalSeconds), 100.0));
+                    }
+                }
+                if (checkForRefresh)
+                {
+                    foreach (var entry in EPGListEntries)
+                    {
+                        if (entry.Duration.TotalMinutes > 0 && (entry.EndTime + _timeDiffPCvsEnigma) <= DateTime.Now)
+                        {
+                            UpdateEPGList();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void UpdateEPGList()
+        {
+            Task.Factory.StartNew(async () =>
+            {
+                var epgNow = await _enigma.GetEPGNow(_currentBouquetSRef);
+                if (epgNow != null)
+                {
+                    await Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        List<EPGListEntry> epgList;
+                        if (EPGListEntries.Count == 0)
+                        {
+                            EPGListEntries = null;
+                            epgList = new List<EPGListEntry>();
+                        }
+                        else
+                        {
+                            epgList = EPGListEntries;
+                        }
+                        for (var i=0; i< epgNow.e2events.Count && i<Settings.Default.MaxEPGBouquetSize; i++)
+                        {
+                            EPGListEntry entry;
+                            if (EPGListEntries==null)
+                            {
+                                entry = new EPGListEntry();
+                                entry.sRef = epgNow.e2events[i].e2eventservicereference;
+                                epgList.Add(entry);
+                            }
+                            else
+                            {
+                                entry = epgList[i];
+                            }
+                            entry.ChannelIndex = i + 1;
+                            entry.ChannelName = epgNow.e2events[i].e2eventservicename;
+                            entry.ProgramName = epgNow.e2events[i].e2eventtitle;
+                            entry.StartTime = _enigma.ConvertDateTime(epgNow.e2events[i].e2eventstart) ?? DateTime.Now;
+                            entry.Duration = _enigma.ConvertTTimeSpan(epgNow.e2events[i].e2eventduration) ?? TimeSpan.FromSeconds(0);
+                            entry.EndTime = entry.StartTime.Add(entry.Duration);
+                        }
+                        UpdateEPGListEntriesProgress(false);
+                        if (EPGListEntries == null)
+                        {
+                            EPGListEntries = epgList;
+                        }
+                    }));
+                }
+            });
         }
 
         private int GetServiceIndexWithinBouquet(e2service service)
@@ -368,8 +533,9 @@ namespace Enigma2TV
                     await ShowChannelInfo();
                     e.Handled = true;
                     break;
-                case Key.E:
-                    await ShowEPGList();
+                case Key.Up:
+                case Key.Down:
+                    ShowEPGList();
                     e.Handled = true;
                     break;
             }
@@ -393,6 +559,74 @@ namespace Enigma2TV
         {
             switch (e.Key)
             {
+                case Key.Up:
+                    if (SelectedEPGListEntry != null && EPGListEntries!= null && EPGListEntries.Count > 0)
+                    {
+                        var curIndex = EPGListEntries.IndexOf(SelectedEPGListEntry);
+                        if (curIndex >= 0)
+                        {
+                            curIndex--;
+                            if (curIndex < 0)
+                            {
+                                curIndex = EPGListEntries.Count - 1;
+                            }
+                            SelectedEPGListEntry = EPGListEntries[curIndex];
+                            epgList.ScrollIntoView(SelectedEPGListEntry);
+                        }
+                    }
+                    e.Handled = true;
+                    break;
+                case Key.Left:
+                    if (SelectedEPGListEntry != null && EPGListEntries != null && EPGListEntries.Count > 0)
+                    {
+                        var curIndex = EPGListEntries.IndexOf(SelectedEPGListEntry);
+                        if (curIndex >= 0)
+                        {
+                            curIndex -= (int)(epgList.ActualHeight / epgList.RowHeight);
+                            if (curIndex < 0)
+                            {
+                                curIndex += EPGListEntries.Count;
+                            }
+                            SelectedEPGListEntry = EPGListEntries[curIndex];
+                            epgList.ScrollIntoView(SelectedEPGListEntry);
+                        }
+                    }
+                    e.Handled = true;
+                    break;
+                case Key.Down:
+                    if (SelectedEPGListEntry != null && EPGListEntries != null && EPGListEntries.Count>0)
+                    {
+                        var curIndex = EPGListEntries.IndexOf(SelectedEPGListEntry);
+                        if (curIndex >= 0)
+                        {
+                            curIndex++;
+                            if (curIndex >= EPGListEntries.Count)
+                            {
+                                curIndex = 0;
+                            }
+                            SelectedEPGListEntry = EPGListEntries[curIndex];
+                            epgList.ScrollIntoView(SelectedEPGListEntry);
+                        }
+                    }
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    if (SelectedEPGListEntry != null && EPGListEntries != null && EPGListEntries.Count > 0)
+                    {
+                        var curIndex = EPGListEntries.IndexOf(SelectedEPGListEntry);
+                        if (curIndex >= 0)
+                        {
+                            curIndex += (int)(epgList.ActualHeight / epgList.RowHeight);
+                            if (curIndex >= EPGListEntries.Count)
+                            {
+                                curIndex = curIndex - EPGListEntries.Count;
+                            }
+                            SelectedEPGListEntry = EPGListEntries[curIndex];
+                            epgList.ScrollIntoView(SelectedEPGListEntry);
+                        }
+                    }
+                    e.Handled = true;
+                    break;
                 case Key.Escape:
                 case Key.X:
                     HideEPGList();
@@ -427,18 +661,20 @@ namespace Enigma2TV
             }
         }
 
-        private async Task ShowEPGList()
+        private void ShowEPGList()
         {
             HideChannelInfo();
-            _activeViewMode = ViewMode.EPG;
+            _activeViewMode = ViewMode.EPGList;
             epgList.Width = 2 * this.ActualWidth / 3;
-            epgListInfo.Height = 2 * this.ActualHeight / 3;
+            epgListInfo.Height = 2 * this.ActualHeight / 4;
+            var curIndex = GetServiceIndexWithinBouquet(_currentService);
             EPGListVisibility = Visibility.Visible;
-            var epgNow = await _enigma.GetEPGNow(_currentBouquetSRef);
-            if (epgNow != null)
+            if (EPGListEntries!=null && curIndex >= 0 && curIndex < EPGListEntries.Count)
             {
-                //EPGListEntry
+                SelectedEPGListEntry = EPGListEntries[curIndex];
+                epgList.ScrollIntoView(SelectedEPGListEntry);
             }
+            epgList.Focus();
         }
 
         private void HideEPGList()
@@ -469,7 +705,7 @@ namespace Enigma2TV
                 case ViewMode.TV:
                     TV_PreviewKeyDown(sender, e);
                     break;
-                case ViewMode.EPG:
+                case ViewMode.EPGList:
                     EPGListInfo_PreviewKeyDown(sender, e);
                     break;
                 default:
@@ -480,7 +716,7 @@ namespace Enigma2TV
 
         private async Task RelocatieTV()
         {
-            await StartStream2TV($"pos={this.Left}x{this.Top}x{gridTV.ActualWidth}x{gridTV.ActualHeight}");
+            await StartStream2TV($"pos={(int)this.Left}x{(int)(this.Top+ epgListHeader.ActualHeight)}x{(int)gridTV.ActualWidth}x{(int)gridTV.ActualHeight}");
         }
 
         private async void gridTV_SizeChanged(object sender, SizeChangedEventArgs e)

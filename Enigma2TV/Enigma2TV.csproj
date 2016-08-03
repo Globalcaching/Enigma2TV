@@ -66,6 +66,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Enigma\Enigma2.cs" />
+    <Compile Include="EPGListEntry.cs" />
     <Compile Include="Models\e2currentserviceinformation.cs" />
     <Compile Include="Models\e2event.cs" />
     <Compile Include="Models\e2eventlist.cs" />

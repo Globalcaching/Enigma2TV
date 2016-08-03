@@ -27,5 +27,11 @@ namespace Enigma2TV
             set { SetProperty(value.ToString()); }
         }
 
+        public int MaxEPGBouquetSize
+        {
+            get { return int.Parse(GetProperty("200")); }
+            set { SetProperty(value.ToString()); }
+        }
+
     }
 }
