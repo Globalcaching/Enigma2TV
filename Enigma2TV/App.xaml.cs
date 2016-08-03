@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Owin.Hosting;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -14,12 +15,13 @@ namespace Enigma2TV
     public partial class App : Application
     {
         Settings _settings = null;
+        public static string baseWebAPIAddress = "http://localhost:9091/";
 
         protected override void OnStartup(StartupEventArgs e)
         {
             WpfSingleInstance.Make("Enigma2TV", this);
             _settings = Settings.Default;
-
+            WebApp.Start<WebApiStartup>(url: baseWebAPIAddress);
             base.OnStartup(e);
         }
     }
