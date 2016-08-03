@@ -64,6 +64,11 @@
                 ItemsSource="{Binding EPGListEntries}"
                 SelectedItem="{Binding SelectedEPGListEntry, Mode=TwoWay}"
             >
+            <DataGrid.Resources>
+                <Style TargetType="{x:Type DataGridColumnHeader}">
+                    <Setter Property="Background" Value="Black" />
+                </Style>
+            </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="50">
                     <DataGridTemplateColumn.CellTemplate>

@@ -555,7 +555,7 @@ namespace Enigma2TV
             }
         }
 
-        private void EPGListInfo_PreviewKeyDown(object sender, KeyEventArgs e)
+        private async Task EPGListInfo_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -623,6 +623,22 @@ namespace Enigma2TV
                             }
                             SelectedEPGListEntry = EPGListEntries[curIndex];
                             epgList.ScrollIntoView(SelectedEPGListEntry);
+                        }
+                    }
+                    e.Handled = true;
+                    break;
+                case Key.Enter:
+                    if (SelectedEPGListEntry != null)
+                    {
+                        var selectedService = (from a in _currentBougetService.e2services where a.e2servicereference == SelectedEPGListEntry.sRef select a).FirstOrDefault();
+                        if (selectedService != null)
+                        {
+                            var index = GetServiceIndexWithinBouquet(selectedService);
+                            if (index >= 0)
+                            {
+                                HideEPGList();
+                                await ZapToIndex(index);
+                            }
                         }
                     }
                     e.Handled = true;
@@ -695,7 +711,7 @@ namespace Enigma2TV
             Close();
         }
 
-        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        private async void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (_activeViewMode)
             {
@@ -706,7 +722,7 @@ namespace Enigma2TV
                     TV_PreviewKeyDown(sender, e);
                     break;
                 case ViewMode.EPGList:
-                    EPGListInfo_PreviewKeyDown(sender, e);
+                    await EPGListInfo_PreviewKeyDown(sender, e);
                     break;
                 default:
                     TV_PreviewKeyDown(sender, e);
