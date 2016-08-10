@@ -1,11 +1,67 @@
 ﻿<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<script src="jquery-3.1.0.min.js"></script>
 <head>
     <meta charset="utf-8" />
     <title></title>
 </head>
 <body>
-    This is a test
+    <button id="buttonStandby">Standby</button>
+    <br /><br />
+    <table align="center">
+        <tr>
+            <td></td>
+            <td><button style="width:60px;height:40px;" id="buttonUp">Up</button></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><button style="width:60px;height:40px;" id="buttonLeft">Left</button></td>
+            <td><button style="width:60px;height:40px;" id="buttonOk">OK</button></td>
+            <td><button style="width:60px;height:40px;" id="buttonRight">Right</button></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button style="width:60px;height:40px;" id="buttonDown">Down</button></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button style="width:60px;height:40px;" id="buttonExit">Exit</button></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <script>
+
+        function sendButtonPress(b) {
+            $.ajax({
+                type: "GET",
+                url: '/api/WebApi/' + b,
+                success: function (response) {
+                },
+                error: function (data, errorText) {
+                }
+            });
+        }
+
+        (function () {
+            $("#buttonUp").click(function () {
+                sendButtonPress('up');
+            });            $("#buttonOk").click(function () {
+                sendButtonPress('enter');
+            });            $("#buttonLeft").click(function () {
+                sendButtonPress('left');
+            });            $("#buttonRight").click(function () {
+                sendButtonPress('right');
+            });            $("#buttonDown").click(function () {
+                sendButtonPress('down');
+            });            $("#buttonExit").click(function () {
+                sendButtonPress('esc');
+            });            $("#buttonStandby").click(function () {
+                sendButtonPress('s');
+            });
+        })();
+    </script>
 </body>
 </html>

@@ -9,31 +9,37 @@ namespace Enigma2TV
 {
     public class WebApiController : ApiController
     {
-        // GET api/values 
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
         // GET api/values/5 
-        public string Get(int id)
+        public string Get(string id)
         {
-            return "value";
-        }
-
-        // POST api/values 
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/values/5 
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5 
-        public void Delete(int id)
-        {
+            switch (id)
+            {
+                case "up":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.Up);
+                    break;
+                case "enter":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.Enter);
+                    break;
+                case "down":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.Down);
+                    break;
+                case "left":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.Left);
+                    break;
+                case "right":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.Right);
+                    break;
+                case "e":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.E);
+                    break;
+                case "esc":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.Escape);
+                    break;
+                case "s":
+                    MainWindow.Instance.SimulateKeyDown(System.Windows.Input.Key.S);
+                    break;
+            }
+            return "OK";
         }
     }
 }

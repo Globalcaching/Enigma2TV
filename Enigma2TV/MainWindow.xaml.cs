@@ -229,6 +229,11 @@ namespace Enigma2TV
             this.DataContext = this;
         }
 
+        public static MainWindow Instance
+        {
+            get { return _instance; }
+        }
+
         public static void processCommandLine(string cmdLine)
         {
             _instance?.ProcessCommandLine(cmdLine);
@@ -516,48 +521,59 @@ namespace Enigma2TV
 
         private async void TV_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            bool handled = false;
             switch (e.Key)
             {
                 case Key.Right:
                     await ChannelUp();
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Left:
                     await ChannelDown();
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.S:
                     await CloseApplication();
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Enter:
                     await ShowChannelInfo();
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Up:
                 case Key.Down:
                     ShowEPGList();
-                    e.Handled = true;
+                    handled = true;
                     break;
+            }
+            if (handled && e.RoutedEvent != null)
+            {
+                e.Handled = true;
             }
         }
 
         private void ChannelInfo_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            bool handled = false;
             switch (e.Key)
             {
                 case Key.Enter:
                     HideChannelInfo();
-                    e.Handled = true;
+                    handled = true;
                     break;
                 default:
                     TV_PreviewKeyDown(sender, e);
                     break;
             }
+            if (handled && e.RoutedEvent != null)
+            {
+                e.Handled = true;
+            }
         }
 
         private async Task EPGListInfo_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            bool handled = false;
             switch (e.Key)
             {
                 case Key.Up:
@@ -575,7 +591,7 @@ namespace Enigma2TV
                             epgList.ScrollIntoView(SelectedEPGListEntry);
                         }
                     }
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Left:
                     if (SelectedEPGListEntry != null && EPGListEntries != null && EPGListEntries.Count > 0)
@@ -592,7 +608,7 @@ namespace Enigma2TV
                             epgList.ScrollIntoView(SelectedEPGListEntry);
                         }
                     }
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Down:
                     if (SelectedEPGListEntry != null && EPGListEntries != null && EPGListEntries.Count>0)
@@ -609,7 +625,7 @@ namespace Enigma2TV
                             epgList.ScrollIntoView(SelectedEPGListEntry);
                         }
                     }
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Right:
                     if (SelectedEPGListEntry != null && EPGListEntries != null && EPGListEntries.Count > 0)
@@ -626,7 +642,7 @@ namespace Enigma2TV
                             epgList.ScrollIntoView(SelectedEPGListEntry);
                         }
                     }
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Enter:
                     if (SelectedEPGListEntry != null)
@@ -642,15 +658,19 @@ namespace Enigma2TV
                             }
                         }
                     }
-                    e.Handled = true;
+                    handled = true;
                     break;
                 case Key.Escape:
                 case Key.X:
                     HideEPGList();
-                    e.Handled = true;
+                    handled = true;
                     break;
                 default:
                     break;
+            }
+            if (handled && e.RoutedEvent != null)
+            {
+                e.Handled = true;
             }
         }
 
@@ -710,6 +730,14 @@ namespace Enigma2TV
                 await _enigma.ToggleStandby();
             }
             Close();
+        }
+
+        public void SimulateKeyDown(Key key)
+        {
+            Dispatcher.BeginInvoke((Action)(() =>
+            {
+                Window_PreviewKeyDown(this, new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(this)/*Keyboard.PrimaryDevice.ActiveSource*/, 0, key));
+            }));
         }
 
         private async void Window_PreviewKeyDown(object sender, KeyEventArgs e)
