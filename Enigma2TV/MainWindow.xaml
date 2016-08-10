@@ -10,6 +10,7 @@
         AllowsTransparency="True"
         Background="#00000000"
         PreviewKeyDown="Window_PreviewKeyDown"
+        WindowState="Maximized"
         Title="Enigma2 TV" Height="540" Width="960">
     <Grid>
         <Grid.RowDefinitions>
@@ -131,7 +132,8 @@
         <Grid Grid.Row="0"
               Grid.RowSpan="3"
               Grid.Column="0" 
-              x:Name="gridChannelInfoView"              
+              x:Name="gridChannelInfoView"
+              Panel.ZIndex="2000"
               >
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
